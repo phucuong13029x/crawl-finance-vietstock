@@ -76,6 +76,7 @@ def main(start_date, stop_date, market):
     while re_start_date < end:
         if re_start_date.weekday() < 5:
             str_re_start_date = re_start_date.strftime('%Y-%m-%d')
+            print(f'Start get data in: {str_re_start_date}')
             content["DATE"].update({str(index): str_re_start_date})
             total = 0
             for i in market:
@@ -88,7 +89,7 @@ def main(start_date, stop_date, market):
                 else:
                     content[i].update({str(index): None})
             content["TOTAL"].update({str(index): total})
-            print(f'{content["DATE"][str(index)]}, {content["HSX"][str(index)]}, {content["HNX"][str(index)]}, {content["UPX"][str(index)]}, {content["TOTAL"][str(index)]}')
+            # print(f'{content["DATE"][str(index)]}, {content["HSX"][str(index)]}, {content["HNX"][str(index)]}, {content["UPX"][str(index)]}, {content["TOTAL"][str(index)]}')
         re_start_date = re_start_date + timedelta(days=1)
         index += 1
 

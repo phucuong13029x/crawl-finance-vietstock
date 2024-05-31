@@ -4,6 +4,40 @@ from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 
 
+bypass = [
+    '2024-09-03 00:00:00.000',
+    '2024-09-02 00:00:00.000',
+    '2024-05-01 00:00:00.000',
+    '2024-04-30 00:00:00.000',
+    '2024-04-29 00:00:00.000',
+    '2024-04-18 00:00:00.000',
+    '2024-02-14 00:00:00.000',
+    '2024-02-13 00:00:00.000',
+    '2024-02-12 00:00:00.000',
+    '2024-02-11 00:00:00.000',
+    '2024-02-10 00:00:00.000',
+    '2024-02-09 00:00:00.000',
+    '2024-02-08 00:00:00.000',
+    '2024-01-01 00:00:00.000',
+    '2023-09-04 00:00:00.000',
+    '2023-09-03 00:00:00.000',
+    '2023-09-02 00:00:00.000',
+    '2023-09-01 00:00:00.000',
+    '2023-05-03 00:00:00.000',
+    '2023-05-02 00:00:00.000',
+    '2023-05-01 00:00:00.000',
+    '2023-04-30 00:00:00.000',
+    '2023-04-29 00:00:00.000',
+    '2023-01-26 00:00:00.000',
+    '2023-01-25 00:00:00.000',
+    '2023-01-24 00:00:00.000',
+    '2023-01-23 00:00:00.000',
+    '2023-01-22 00:00:00.000',
+    '2023-01-21 00:00:00.000',
+    '2023-01-20 00:00:00.000',
+    '2023-01-02 00:00:00.000'
+]
+
 class Vietstock:
     def __init__(self) -> None:
         self.url       = 'https://finance.vietstock.vn/data/'
@@ -73,25 +107,30 @@ def main(start_date, stop_date, market):
         content[i]  = {}
     content["TOTAL"]  = {}
     index = 0
+    re_bypass = []
+    for b in bypass:
+        re_bypass.append(b[:10])
     while re_start_date < end:
         if re_start_date.weekday() < 5:
             str_re_start_date = re_start_date.strftime('%Y-%m-%d')
-            print(f'Start get data in: {str_re_start_date}')
-            content["DATE"].update({str(index): str_re_start_date})
-            total = 0
-            for i in market:
-                data = conn.get_data(meta='thong-ke-gia', market=i, date=str_re_start_date)
-                # print(data)
-                if data['code'] == 200:
-                    item = float(data['data'][1][0]['TotalVal']) * 1000000
-                    content[i].update({str(index): int(item)})
-                    total += int(item)
-                else:
-                    content[i].update({str(index): None})
-            content["TOTAL"].update({str(index): total})
-            # print(f'{content["DATE"][str(index)]}, {content["HSX"][str(index)]}, {content["HNX"][str(index)]}, {content["UPX"][str(index)]}, {content["TOTAL"][str(index)]}')
+            if str_re_start_date not in re_bypass:
+                print(f'Start get data in: {str_re_start_date}')
+                content["DATE"].update({str(index): str_re_start_date})
+                total = 0
+                for i in market:
+                    data = conn.get_data(meta='thong-ke-gia', market=i, date=str_re_start_date)
+                    # print(data)
+                    if data['code'] == 200:
+                        item = float(data['data'][1][0]['TotalVal']) * 1000000
+                        content[i].update({str(index): int(item)})
+                        total += int(item)
+                    else:
+                        content[i].update({str(index): None})
+                content["TOTAL"].update({str(index): total})
+                print(f'{content["DATE"][str(index)]}, {content["HSX"][str(index)]}, {content["HNX"][str(index)]}, {content["UPX"][str(index)]}, {content["TOTAL"][str(index)]}')
+                index += 1
         re_start_date = re_start_date + timedelta(days=1)
-        index += 1
+    return content
 
 if __name__ == '__main__':
     start_date = '2024-01-01'
@@ -100,3 +139,6 @@ if __name__ == '__main__':
     result = main(start_date, stop_date, market)
     df = pd.DataFrame(result)
     df.to_csv(f"list_data_vietstock_{int(datetime.now().timestamp())}.csv", index=False)
+
+
+

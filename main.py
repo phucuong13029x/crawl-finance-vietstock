@@ -110,11 +110,12 @@ def main(start_date, stop_date, market):
     re_bypass = []
     for b in bypass:
         re_bypass.append(b[:10])
+
+    temp = {}
     while re_start_date < end:
         if re_start_date.weekday() < 5:
             str_re_start_date = re_start_date.strftime('%Y-%m-%d')
             if str_re_start_date not in re_bypass:
-                print(f'Start get data in: {str_re_start_date}')
                 content["DATE"].update({str(index): str_re_start_date})
                 total = 0
                 for i in market:
@@ -123,10 +124,18 @@ def main(start_date, stop_date, market):
                     if data['code'] == 200:
                         item = float(data['data'][1][0]['TotalVal']) * 1000000
                         content[i].update({str(index): int(item)})
+                        temp[i] = int(item)
                         total += int(item)
                     else:
                         content[i].update({str(index): None})
-                content["TOTAL"].update({str(index): total})
+                        temp[i] = None
+                if index > 0:
+                    if content["HSX"][str(index - 1)] != temp["HSX"] and content["HNX"][str(index - 1)] != temp["HNX"] and content["UPX"][str(index - 1)] != temp["UPX"]:
+                        content["TOTAL"].update({str(index): total})
+                    else:
+                        content["TOTAL"].update({str(index): None})
+                else:
+                    content["TOTAL"].update({str(index): total})
                 print(f'{content["DATE"][str(index)]}, {content["HSX"][str(index)]}, {content["HNX"][str(index)]}, {content["UPX"][str(index)]}, {content["TOTAL"][str(index)]}')
                 index += 1
         re_start_date = re_start_date + timedelta(days=1)
@@ -137,8 +146,6 @@ if __name__ == '__main__':
     stop_date  = '2024-05-31'
     market = ['HSX', 'HNX', 'UPX']
     result = main(start_date, stop_date, market)
+
     df = pd.DataFrame(result)
     df.to_csv(f"list_data_vietstock_{int(datetime.now().timestamp())}.csv", index=False)
-
-
-
